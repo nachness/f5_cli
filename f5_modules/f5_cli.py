@@ -14,13 +14,12 @@ def main():
                               If no pass is specified you'll be prompted",
                         dest="password")
     parser.add_argument("-H","--host", help="The IP of F5",
-                        dest="host", required=True)
+                        dest="host")
     parser.add_argument("-P", "--port", type=int,
                         help="The port on which F5s APIs are served",
                         default=443, dest="port")
     parser.add_argument("-N","--node",
-                        help="Node backend to disable", dest="node",
-                        required=True)
+                        help="Node backend to disable", dest="node")
     parser.add_argument("--disable", action="store_true",
                         help="Take Disable action towards backend",
                         dest="disable")
