@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name = "f5_cli",
-    version = "0.0.1",
+    version = "0.0.3",
     author = "Victor Daskalov",
     author_email = "victor.daskalov@itgix.com",
     entry_points={

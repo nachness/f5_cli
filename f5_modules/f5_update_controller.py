@@ -3,43 +3,37 @@ from icontrol.exceptions import iControlUnexpectedHTTPError
 
 class F5Manager(object):
     
-    def __init__(self, hostname, admin, password, port):
-
-        self.hostname = hostname
-        self.admin = admin
-        self.password = password
-        self.port = port
-        self.mgmt = None
+    def __init__(self, arg_parser):
+        self.hostname = arg_parser.host
+        self.admin = arg_parser.user
+        self.password = arg_parser.password
+        self.port = arg_parser.port
+        self.f5_manager = None
 
     def connect(self):
         print("Trying to connect to {}".format(self.hostname))
         try:
-            self.mgmt = ManagementRoot(hostname=self.hostname,
+            self.f5_manager = ManagementRoot(hostname=self.hostname,
                                        username=self.admin,
                                        password=self.password,
                                        port=self.port)
             print("Connected successfully")
         except iControlUnexpectedHTTPError as err:
-            raise
+            raise 
 
 
-
-class NodeController(object):
+class NodeController(F5Manager):
     
-    def __init__(self, node_name, partition, f5_manager):
+    def __init__(self, node_name, partition, arg_parser):
+        super(F5Manager,self).__init__(arg_parser)
         self.node_name = node_name
-        self.partition = partition
-        self.f5_manager = f5_manager.mgmt
-        self.node_object = None
-
-    def load_node(self):
+        self.partition = arg_parser.partition
         try:
-            print("Trying to load node {}".format(self.node_name))
+            self.f5_manager.connect()
             self.node_object = self.f5_manager.tm.ltm.nodes.node.load(
-                partition=self.partition,
-                name=self.node_name)
-            print("Loaded node {}".format(self.node_name))
-        except Exception:
+                    partition=self.partition,
+                    name=self.node_name)
+        except Exception as err:
             raise
 
     def take_node_down(self):
@@ -60,4 +54,53 @@ class NodeController(object):
 
     def get_node_status(self):
         return self.node_object.session, self.node_object.state
-   
+
+class VirtualServerController(F5Manager):
+    
+    def __init__(self, vip_name, arg_parser):
+        super(VirtualServerController, self).__init__(arg_parser)
+        super(VirtualServerController, self).connect()
+        self.vip_name = vip_name
+        self.partition = arg_parser.partition
+        try:
+            self.vip_object = self.f5_manager.tm.ltm.virtuals.virtual.load(
+                name=self.vip_name,
+                partition=self.partition)
+        except Exception as err:
+            raise
+
+    def __refresh(self):
+        try: 
+            print("Reloading %s virtualserver" % self.vip_name)
+            self.vip_object.refresh()
+        except Exception as err:
+            raise
+
+    def add(self, irule_name):
+        try:
+            if irule_name not in self.vip_object.rules:
+                print("Adding rule %s" % (irule_name))
+                self.vip_object.rules.append(irule_name)
+                self.vip_object.update('rules')           
+                print("Rule added")
+                self.__refresh()
+            else:
+                print("Rule already exists") 
+        except Exception:
+            raise 
+
+    def remove(self, irule_name):
+        try: 
+            if irule_name in self.vip_object.rules:
+                print("Enabling node %s" % (self.irule_name))
+                self.vip_object.rules.remove(irule_name)
+                self.vip_object.update('rules')
+                print("Rule removed")
+                self.__refresh()
+            else:
+                print("iRule is not present on this VS")
+        except Exception:
+            raise 
+
+    def get_vip_attr(self, attr):
+        return self.vip_object.__dict__[attr]
