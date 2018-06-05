@@ -81,7 +81,7 @@ class VirtualServerController(F5Manager):
             if irule_name not in self.vip_object.rules:
                 print('Adding rule %s' % (irule_name))
                 self.vip_object.rules.append(irule_name)
-                self.vip_object.update('rules')           
+                self.vip_object.update()
                 print('Rule added')
                 self.__refresh()
             else:
@@ -92,9 +92,9 @@ class VirtualServerController(F5Manager):
     def remove(self, irule_name):
         try: 
             if irule_name in self.vip_object.rules:
-                print('Enabling node %s' % (self.irule_name))
+                print('Removing rule %s' % (irule_name))
                 self.vip_object.rules.remove(irule_name)
-                self.vip_object.update('rules')
+                self.vip_object.update()
                 print('Rule removed')
                 self.__refresh()
             else:
