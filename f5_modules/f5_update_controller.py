@@ -4,7 +4,6 @@ from icontrol.exceptions import iControlUnexpectedHTTPError
 class F5Manager(object):
     
     def __init__(self, **kwargs):
-        print(kwargs)
         self.hostname = kwargs.pop('host')
         self.admin = kwargs.pop('user')
         self.password = kwargs.pop('password')

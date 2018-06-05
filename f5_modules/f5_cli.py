@@ -126,7 +126,6 @@ def get_node_status(nodeController):
            node state status is: {}'''.format(session, state))
 
 def take_rules_action(args):
-    print(args.__dict__) 
     for vs_name in args.vip_list:
         virtualServerController = VirtualServerController(vip_name=vs_name,
             **args.__dict__)
